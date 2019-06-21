@@ -29,6 +29,7 @@ import apache_beam as beam
 from apache_beam.io import ReadFromText
 from apache_beam.io import WriteToText
 from apache_beam.metrics import Metrics
+from apache_beam.io.fileio import MatchFiles, ReadMatches
 from apache_beam.metrics.metric import MetricsFilter
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
@@ -37,34 +38,12 @@ from apache_beam.options.pipeline_options import SetupOptions
 class WordExtractingDoFn(beam.DoFn):
   """Parse each line of input text into words."""
 
-  def __init__(self):
-    self.words_counter = Metrics.counter(self.__class__, 'words')
-    self.word_lengths_counter = Metrics.counter(self.__class__, 'word_lengths')
-    self.word_lengths_dist = Metrics.distribution(
-        self.__class__, 'word_len_dist')
-    self.empty_line_counter = Metrics.counter(self.__class__, 'empty_lines')
 
   def process(self, element):
-    """Returns an iterator over the words of this element.
-
-    The element is a line of text.  If the line is blank, note that, too.
-
-    Args:
-      element: the element being processed
-
-    Returns:
-      The processed element.
-    """
-    text_line = element.strip()
-    if not text_line:
-      self.empty_line_counter.inc(1)
-    words = re.findall(r'[\w\']+', text_line, re.UNICODE)
-    for w in words:
-      self.words_counter.inc()
-      self.word_lengths_counter.inc(len(w))
-      self.word_lengths_dist.update(len(w))
-    return words
-
+    readelement = ReadMatches(element)
+    print(readelement)
+    print(element)
+    return 1
 
 def run(argv=None):
   """Main entry point; defines and runs the wordcount pipeline."""
@@ -73,32 +52,37 @@ def run(argv=None):
                       dest='input',
                       default='gs://dataflow-samples/shakespeare/kinglear.txt',
                       help='Input file to process.')
+
   parser.add_argument('--output',
                       dest='output',
                       required=True,
                       help='Output file to write results to.')
+
   known_args, pipeline_args = parser.parse_known_args(argv)
 
   # We use the save_main_session option because one or more DoFn's in this
   # workflow rely on global context (e.g., a module imported at module level).
   pipeline_options = PipelineOptions(pipeline_args)
   pipeline_options.view_as(SetupOptions).save_main_session = True
+
   p = beam.Pipeline(options=pipeline_options)
 
   # Read the text file[pattern] into a PCollection.
-  lines = p | 'read' >> ReadFromText(known_args.input)
+  # lines = p | 'read' >> ReadFromText(known_args.input)
+
+  files = p | 'files' >> MatchFiles(known_args.input)
+
+  print('*************************')
+  print(files)
 
   # Count the occurrences of each word.
   def count_ones(word_ones):
     (word, ones) = word_ones
     return (word, sum(ones))
 
-  counts = (lines
-            | 'split' >> (beam.ParDo(WordExtractingDoFn())
-                          .with_output_types(unicode))
-            | 'pair_with_one' >> beam.Map(lambda x: (x, 1))
-            | 'group' >> beam.GroupByKey()
-            | 'count' >> beam.Map(count_ones))
+  counts = (files
+            | 'read' >> (beam.ParDo(WordExtractingDoFn()).with_output_types(unicode))
+            )
 
   # Format the counts into a PCollection of strings.
   def format_result(word_count):
