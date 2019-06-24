@@ -28,6 +28,7 @@ from apache_beam.io.gcp.gcsio import GcsIO
 from apache_beam.options.pipeline_options import PipelineOptions
 from io import BytesIO
 from apache_beam.io import filesystems
+from apache_beam.options.value_provider import StaticValueProvider
 
 
 class WordExtractingDoFn(beam.DoFn):
@@ -60,7 +61,7 @@ def run(argv=None):
     # p = beam.Pipeline(options=pipeline_options)
     wordcount_options = pipeline_options.view_as(WordcountOptions)
     with beam.Pipeline(options=pipeline_options) as p:
-        files = (p | 'files' >> MatchFiles(wordcount_options.input)
+        files = (p | 'files' >> MatchFiles(StaticValueProvider(str, 'gs://unzip-testing/unzip_nested/US10294769-20190521/*.TIF'))
                  | 'read-matches' >> ReadMatches()
                  )
         files_and_contents = (files
