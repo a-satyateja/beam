@@ -74,7 +74,10 @@ class build(_build):  # pylint: disable=invalid-name
 # The output of custom commands (including failures) will be logged in the
 # worker-startup log.
 CUSTOM_COMMANDS = [
-    ['echo', 'Custom command worked!']]
+    ['echo', 'Custom command worked!'],
+     ['pip', 'install', 'pillow'],
+      ['pip', 'install', 'apache-beam==2.13.0']
+    ]
 
 
 class CustomCommands(setuptools.Command):
@@ -109,7 +112,7 @@ class CustomCommands(setuptools.Command):
 # so this dependency will not trigger anything to be installed unless a version
 # restriction is specified.
 REQUIRED_PACKAGES = [
-    'numpy',
+    'pillow'
     ]
 
 
