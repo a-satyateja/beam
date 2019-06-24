@@ -32,32 +32,31 @@ from apache_beam.io import filesystems
 
 class WordExtractingDoFn(beam.DoFn):
     def process(self, element):
-        logging.info('element found was', element)
+        # logging.info('element found was', element)
         # print("reads element ::")
         # print(element)
-        head, file_name = os.path.split(os.path.splitext(element)[0])
+        # head, file_name = os.path.split(os.path.splitext(element)[0])
         gcsio_obj = gcsio.GcsIO()  # type: GcsIO
-        bufferImg = gcsio_obj.open(element, 'r').read()
-        image = Image.open(BytesIO(bufferImg))
-        writer = filesystems.FileSystems.create(head + "/" + file_name + ".png", "image/png")
-        b = BytesIO()
-        image.save(b, format="png")
-        contents = b.getvalue()
-        writer.write(contents)
-        writer.close()
+        # bufferImg = gcsio_obj.open(element, 'r').read()
+        # image = Image.open(BytesIO(bufferImg))
+        # writer = filesystems.FileSystems.create(head + "/" + file_name + ".png", "image/png")
+        # b = BytesIO()
+        # image.save(b, format="png")
+        # contents = b.getvalue()
+        # writer.write(contents)
+        # writer.close()
         gcsio_obj.delete(element)
-        b.close()
-
-
-class WordcountOptions(PipelineOptions):
-    @classmethod
-    def _add_argparse_args(cls, parser):
-        parser.add_value_provider_argument('--input', type=str)
+        # b.close()
 
 
 def run(argv=None):
+    class WordcountOptions(PipelineOptions):
+        @classmethod
+        def _add_argparse_args(cls, parser):
+            parser.add_value_provider_argument('--input', type=str,
+                                               default='gs://unzip-testing/unzip_nested/US10294769-20190521/*.TIF')
 
-    pipeline_options = PipelineOptions()
+    pipeline_options = PipelineOptions(argv)
     p = beam.Pipeline(options=pipeline_options)
     wordcount_options = pipeline_options.view_as(WordcountOptions)
     files = (p | 'files' >> MatchFiles(wordcount_options.input)
