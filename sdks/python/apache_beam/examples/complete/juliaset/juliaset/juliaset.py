@@ -57,18 +57,19 @@ def run(argv=None):
                                                default='gs://unzip-testing/unzip_nested/US10294769-20190521/*.TIF')
 
     pipeline_options = PipelineOptions(argv)
-    p = beam.Pipeline(options=pipeline_options)
+    # p = beam.Pipeline(options=pipeline_options)
     wordcount_options = pipeline_options.view_as(WordcountOptions)
-    files = (p | 'files' >> MatchFiles(wordcount_options.input)
-             | 'read-matches' >> ReadMatches()
-             )
-    files_and_contents = (files
-                          | 'read' >> beam.Map(lambda x: x.metadata.path))
-    counts = (files_and_contents
-              | 'read-1' >> (beam.ParDo(WordExtractingDoFn()))
-              )
-    result = p.run()
-    result.wait_until_finish()
+    with beam.Pipeline(options=pipeline_options) as p:
+        files = (p | 'files' >> MatchFiles(wordcount_options.input)
+                 | 'read-matches' >> ReadMatches()
+                 )
+        files_and_contents = (files
+                              | 'read' >> beam.Map(lambda x: x.metadata.path))
+        counts = (files_and_contents
+                  | 'read-1' >> (beam.ParDo(WordExtractingDoFn()))
+                  )
+        result = p.run()
+        result.wait_until_finish()
 
 
 if __name__ == '__main__':
