@@ -31,11 +31,18 @@ from apache_beam.io import filesystems
 
 
 class WordExtractingDoFn(beam.DoFn):
-    import os
-    from io import BytesIO
+    
     def process(self, element):
+        import os
+        from io import BytesIO
+        
         print("reads element ::")
         print(element)
+
+        logging.info("********************")
+        logging.info(element)
+        logging.info("********************")
+
         head, file_name = os.path.split(os.path.splitext(element)[0])
         gcsio_obj = gcsio.GcsIO()
         bufferImg = gcsio_obj.open(element, 'r').read()
