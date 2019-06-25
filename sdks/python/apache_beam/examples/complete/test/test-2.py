@@ -60,11 +60,6 @@ def run(argv=None):
                         dest='input',
                         default='gs://dataflow-samples/shakespeare/kinglear.txt',
                         help='Input file to process.')
-    parser.add_argument('--output',
-                        dest='output',
-                        required=False,
-                        default='gs://dataflow-samples/shakespeare/kinglear.txt',
-                        help='Output file to write results to.')
     known_args, pipeline_args = parser.parse_known_args(argv)
 
     # We use the save_main_session option because one or more DoFn's in this
