@@ -59,20 +59,19 @@ def run(argv=None):
         def _add_argparse_args(cls, parser):
             parser.add_argument(
                 '--input',
-                default='gs://dataflow-samples/shakespeare/kinglear.txt',
+                default='gs://unzip-testing/unzip_nested/US10294769-20190521/*.TIF',
                 help='Path of the file to read from')
     pipeline_options = PipelineOptions(argv)
     p = beam.Pipeline(options=pipeline_options)
     wordcount_options = pipeline_options.view_as(WordcountOptions)
-    files = (p | 'files' >> MatchFiles("gs://unzip-testing/unzip_nested/US10294769-20190521/US10294769-20190521-D00000.TIF")
-             | 'read-matches' >> ReadMatches()
-             )
-    files_and_contents = (files
-                          |'read' >> beam.Map(lambda x: x.metadata.path,
-                                              ))
-    counts = (files_and_contents
-              | 'read-1' >> (beam.ParDo(WordExtractingDoFn()))
-              )
+    
+    files = (p | 'files' >> filesystems.FileSystems.match(wordcount_options.input))
+    print (files)
+    logging.info(files)
+    files_and_contents = (files | 'read' >> beam.Map(lambda x: x.metadata.path))
+    print (files_and_contents)
+    logging.info(files_and_contents)
+    counts = (files_and_contents | 'read-1' >> (beam.ParDo(WordExtractingDoFn())))
     result = p.run()
     result.wait_until_finish()
 
