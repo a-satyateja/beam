@@ -86,19 +86,19 @@ def run(argv=None):
 
 
     # Read the text file[pattern] into a PCollection.
-    lines = p | 'read' >> ReadFromText(known_args.input)
+    # lines = p | 'read' >> ReadFromText(known_args.input)
 
     # Count the occurrences of each word.
-    def count_ones(word_ones):
-        (word, ones) = word_ones
-        return (word, sum(ones))
-    beam.Create()
-    counts = (lines
-              | 'split' >> (beam.ParDo(WordExtractingDoFn())
-                            .with_output_types(unicode))
-              | 'pair_with_one' >> beam.Map(lambda x: (x, 1))
-              | 'group' >> beam.GroupByKey()
-              | 'count' >> beam.Map(count_ones))
+    # def count_ones(word_ones):
+    #     (word, ones) = word_ones
+    #     return (word, sum(ones))
+    # beam.Create()
+    # counts = (lines
+    #           | 'split' >> (beam.ParDo(WordExtractingDoFn())
+    #                         .with_output_types(unicode))
+    #           | 'pair_with_one' >> beam.Map(lambda x: (x, 1))
+    #           | 'group' >> beam.GroupByKey()
+    #           | 'count' >> beam.Map(count_ones))
 
     result = p.run()
     result.wait_until_finish()
