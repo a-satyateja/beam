@@ -23,11 +23,9 @@ import logging
 
 
 import apache_beam as beam
-from PIL import Image
-from apache_beam.io.gcp import gcsio
 from apache_beam.io.fileio import MatchFiles, ReadMatches
 from apache_beam.options.pipeline_options import PipelineOptions
-from apache_beam.io import filesystems
+
 
 
 class WordExtractingDoFn(beam.DoFn):
@@ -35,6 +33,10 @@ class WordExtractingDoFn(beam.DoFn):
     def process(self, element):
         import os
         from io import BytesIO
+        from apache_beam.io import filesystems
+        from apache_beam.io.gcp import gcsio
+        from PIL import Image
+        import logging
         
         print("reads element ::")
         print(element)
