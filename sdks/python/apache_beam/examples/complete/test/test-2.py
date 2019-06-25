@@ -1,3 +1,4 @@
+
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -54,25 +55,29 @@ class WordExtractingDoFn(beam.DoFn):
 def run(argv=None):
     """Main entry point; defines and runs the wordcount pipeline."""
 
-    class WordcountOptions(PipelineOptions):
-        @classmethod
-        def _add_argparse_args(cls, parser):
-            parser.add_argument(
-                '--input',
-                default='gs://dataflow-samples/shakespeare/kinglear.txt',
-                help='Path of the file to read from')
-    pipeline_options = PipelineOptions(argv)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--input',
+                        dest='input',
+                        default='gs://dataflow-samples/shakespeare/kinglear.txt',
+                        help='Input file to process.')
+    parser.add_argument('--output',
+                        dest='output',
+                        required=False,
+                        default='gs://dataflow-samples/shakespeare/kinglear.txt',
+                        help='Output file to write results to.')
+    known_args, pipeline_args = parser.parse_known_args(argv)
+
+    # We use the save_main_session option because one or more DoFn's in this
+    # workflow rely on global context (e.g., a module imported at module level).
+    pipeline_options = PipelineOptions(pipeline_args)
+    pipeline_options.view_as(SetupOptions).save_main_session = True
     p = beam.Pipeline(options=pipeline_options)
-    wordcount_options = pipeline_options.view_as(WordcountOptions)
-    files = (p | 'files' >> MatchFiles("gs://unzip-testing/unzip_nested/US10294769-20190521/US10294769-20190521-D00000.TIF")
-             | 'read-matches' >> ReadMatches()
-             )
-    files_and_contents = (files
-                          |'read' >> beam.Map(lambda x: x.metadata.path,
-                                              ))
-    counts = (files_and_contents
-              | 'read-1' >> (beam.ParDo(WordExtractingDoFn()))
-              )
+
+    files = (p | 'files' >> filesystems.FileSystems.match(known_args.input))
+    print (files)
+    files_and_contents = (files | 'read' >> beam.Map(lambda x: x.metadata.path))
+    print (files_and_contents)
+    counts = (files_and_contents | 'read-1' >> (beam.ParDo(WordExtractingDoFn())))
     result = p.run()
     result.wait_until_finish()
 
