@@ -77,8 +77,8 @@ def run(argv=None):
     # counts = (files_and_contents | 'read-1' >> (beam.ParDo(WordExtractingDoFn())))
 
     files = filesystems.FileSystems.match(known_args.input)
-    fs = filesystems.FileSystem(pipeline_options)
-    files2 = fs.match_files(file, known_args.input)
+
+    files2 = filesystems.FileSystems.match_files(file, known_args.input)
     print (files)
     print (files2)
     print (len(files))
@@ -86,7 +86,7 @@ def run(argv=None):
 
 
     # Read the text file[pattern] into a PCollection.
-    # lines = p | 'read' >> ReadFromText(known_args.input)
+    lines = p | 'read' >> ReadFromText(known_args.input)
 
     # Count the occurrences of each word.
     # def count_ones(word_ones):
