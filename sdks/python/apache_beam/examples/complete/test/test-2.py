@@ -67,12 +67,14 @@ def run(argv=None):
     pipeline_options = PipelineOptions(pipeline_args)
     pipeline_options.view_as(SetupOptions).save_main_session = True
     p = beam.Pipeline(options=pipeline_options)
-
-    files = (p | 'files' >> filesystems.FileSystems.match(known_args.input))
+    files = filesystems.FileSystems.match(known_args.input)
     print (files)
-    files_and_contents = (files | 'read' >> beam.Map(lambda x: x.metadata.path))
-    print (files_and_contents)
-    counts = (files_and_contents | 'read-1' >> (beam.ParDo(WordExtractingDoFn())))
+    print (type(files))
+    # files = (p | 'files' >> filesystems.FileSystems.match(known_args.input))
+    # print (files)
+    # files_and_contents = (files | 'read' >> beam.Map(lambda x: x.metadata.path))
+    # print (files_and_contents)
+    # counts = (files_and_contents | 'read-1' >> (beam.ParDo(WordExtractingDoFn())))
     result = p.run()
     result.wait_until_finish()
 
