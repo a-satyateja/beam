@@ -78,7 +78,7 @@ def run(argv=None):
 
     files = filesystems.FileSystems.match(known_args.input)
     print (files)
-    print (files.count())
+    print (len(files))
     for afile in files:  # by item
         print(FileMetadata(afile))
 
