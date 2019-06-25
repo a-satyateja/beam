@@ -20,8 +20,8 @@
 from __future__ import absolute_import
 import argparse
 import logging
-import os
-from io import BytesIO
+
+
 import apache_beam as beam
 from PIL import Image
 from apache_beam.io.gcp import gcsio
@@ -31,7 +31,8 @@ from apache_beam.io import filesystems
 
 
 class WordExtractingDoFn(beam.DoFn):
-
+    import os
+    from io import BytesIO
     def process(self, element):
         print("reads element ::")
         print(element)
