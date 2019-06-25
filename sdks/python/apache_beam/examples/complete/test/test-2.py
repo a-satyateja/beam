@@ -77,10 +77,12 @@ def run(argv=None):
     # counts = (files_and_contents | 'read-1' >> (beam.ParDo(WordExtractingDoFn())))
 
     files = filesystems.FileSystems.match(known_args.input)
+    fs = filesystems.FileSystem(pipeline_options)
+    files2 = fs.match_files(file, known_args.input)
     print (files)
+    print (files2)
     print (len(files))
-    for afile in files:  # by item
-        print(FileMetadata(afile))
+    print (len(files2))
 
 
     # Read the text file[pattern] into a PCollection.
@@ -90,7 +92,7 @@ def run(argv=None):
     def count_ones(word_ones):
         (word, ones) = word_ones
         return (word, sum(ones))
-
+    beam.Create()
     counts = (lines
               | 'split' >> (beam.ParDo(WordExtractingDoFn())
                             .with_output_types(unicode))
